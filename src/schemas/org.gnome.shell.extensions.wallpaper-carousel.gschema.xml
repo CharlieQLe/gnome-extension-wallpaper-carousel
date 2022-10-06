@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema id="org.gnome.shell.extensions.wallpaper-carousel" path="/org/gnome/shell/extensions/wallpaper-carousel/">
+        <key name="timer" type="i">
+            <default>3600</default>
+        </key>
+        <key name="order" type="as">
+            <default>[]</default>
+        </key>
+    </schema>
+</schemalist>
