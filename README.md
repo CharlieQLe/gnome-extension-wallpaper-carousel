@@ -2,7 +2,7 @@
 
 ## What is this?
 
-An extension that intends to provide a wallpaper changer that cycles between local wallpaper files based on a timer.
+An extension that provides a wallpaper changer that cycles between local wallpaper files based on a timer.
 
 ## What versions of GNOME does WALLPAPER CAROUSEL support?
 
