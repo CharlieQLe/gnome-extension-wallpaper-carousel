@@ -1,7 +1,5 @@
 # WALLPAPER CAROUSEL
 
-## ___THIS IS UNFINISHED!___
-
 ## What is this?
 
 An extension that intends to provide a wallpaper changer that cycles between local wallpaper files based on a timer.
@@ -10,14 +8,22 @@ An extension that intends to provide a wallpaper changer that cycles between loc
 
 It should likely support GNOME 42, and would absolutely work with GNOME 43.
 
+## How do I install?
+
+Tar packages are not available yet.
+
+The source can be used by cloning this repository and running the install script like so:
+
+```
+git clone https://github.com/CharlieQLe/gnome-extension-wallpaper-carousel.git
+sh install.sh
+```
+
+After the installation, simply log out and log back in and it should show up in the Extensions application!
+
 ## TODO
 
-* Get the extension into a working state
-    * Parse wallpapers that are not using the XML format
-    * Create preferences
-        * Display all wallpapers
-            * If possible, use the same widgets as the Appearance menu in Settings
-        * Adjust the timer based on seconds
+* If possible, change the appearance of the preferences to use draggable rows or use the same widgets as the Appearance menu in Settings
 * Provide an option to skip to the next wallpaper
 * Publish on [extensions.gnome.org]()
 

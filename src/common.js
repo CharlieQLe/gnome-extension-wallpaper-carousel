@@ -19,108 +19,213 @@ var Settings = class Settings {
         this._schema.connect(`changed::${key}`, func); 
     }
 
-    getBoolean(key) { 
-        return this._schema.get_boolean(key); 
+    getInt(key) { 
+        return this._schema.get_int(key); 
     }
 
-    setBoolean(key, value) { 
-        this._schema.set_boolean(key, value); 
+    setInt(key, value) { 
+        this._schema.set_int(key, value); 
+    }
+
+    getString(key) { 
+        return this._schema.get_string(key); 
+    }
+
+    setString(key, value) { 
+        this._schema.set_string(key, value); 
+    }
+
+    getStrv(key) {
+        return this._schema.get_strv(key);
+    }
+
+    setStrv(key, value) {
+        this._schema.set_strv(key, value);
     }
 }
 
-var WallpaperManager = class WallpaperManager {
-    static _wallpaperData;
-    
-    static initialize() {
-        this._wallpaperData = [];
-        
-        getXMLs().forEach(path => {
-            const data = this.findWallpaperData(processXMLFromPath(path));
-            if (data !== null) this._wallpaperData.push(data);
-        });
+var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
+    static TIMER = 'timer';
+    static ORDER = 'order';
+
+    static getNewSchema() {
+        const extensionUtils = imports.misc.extensionUtils;
+        return extensionUtils.getSettings(extensionUtils.getCurrentExtension().metadata['settings-schema']);
     }
 
-    static destroy() {
-        this._wallpaperData = null;
-    }
-    
-    static get initialized() {
-        return this._wallpaperData !== null;
+    constructor() { 
+        super(WallpaperCarouselSettings.getNewSchema()); 
     }
 
-    static get wallpaperData() {
-        return this._wallpaperData;
+    get timer() {
+        return this.getInt(WallpaperCarouselSettings.TIMER);
     }
 
-    static findWallpaperData(xml) {
-        const data = {
-            default: '',
-            dark: ''
-        };
-        xml.f.forEach(wallpapersData => {
+    set timer(time) {
+        this.setInt(WallpaperCarouselSettings.TIMER, time);
+    }
+
+    onChangedTimer(func) {
+        this.onChanged(WallpaperCarouselSettings.TIMER, func);
+    }
+
+    get order() {
+        return this.getStrv(WallpaperCarouselSettings.ORDER);
+    }
+
+    set order(order) {
+        this.setStrv(WallpaperCarouselSettings.ORDER, order);
+    }
+
+    onChangedOrder(func) {
+        this.onChanged(WallpaperCarouselSettings.ORDER, func);
+    }
+}
+
+var BackgroundSettings = class BackgroundSettings extends Settings {
+    static PICTURE_URI = 'picture-uri';
+    static PICTURE_URI_DARK = 'picture-uri-dark';
+
+    static getNewSchema() {
+        return new Gio.Settings({ schema: 'org.gnome.desktop.background' });
+    }
+
+    constructor() {
+        super(BackgroundSettings.getNewSchema());
+    }
+
+    get pictureUri() {
+        return this.getString(BackgroundSettings.PICTURE_URI);
+    }
+
+    set pictureUri(path) {
+        return this.setString(BackgroundSettings.PICTURE_URI, path);
+    }
+
+    get pictureUriDark() {
+        return this.getString(BackgroundSettings.PICTURE_URI_DARK);
+    }
+
+    set pictureUriDark(path) {
+        return this.setString(BackgroundSettings.PICTURE_URI_DARK, path);
+    }
+}
+
+var WallpaperData = class WallpaperData {
+    constructor(name, light, dark) {
+        this.name = name;
+        this.light = light;
+        this.dark = dark;
+    }
+}
+
+/**
+ * Get all wallpapers.
+ * 
+ * @returns {Array<WallpaperData>} Wallpapers
+ */
+function getAllWallpapers() {
+    const wallpapers = [];
+
+    // Handle XMLs
+    [   GLib.build_filenamev([GLib.get_user_data_dir(), 'gnome-background-properties']),
+        ...GLib.get_system_data_dirs().map(path => GLib.build_filenamev([path, 'gnome-background-properties']))
+    ].forEach(directory => forEachFile(directory, file => {
+        const path = file.get_path();
+        if (!path.endsWith('.xml')) return;
+        const contents = GLib.file_get_contents(path);
+        if (!contents[0]) return;
+        let xmlText = contents[1];
+        if (xmlText instanceof Uint8Array) xmlText = ByteArray.toString(xmlText);
+        const parsedXml = parseXML(xmlText);
+
+        // Get wallpaper data
+        let name = file.get_basename();
+        let light = '';
+        let dark = '';
+        parsedXml.f.forEach(wallpapersData => {
             if (wallpapersData.n.toLowerCase() !== 'wallpapers') return;
             const wallpaperData = wallpapersData.f[0];
             if (wallpaperData.n.toLowerCase() !== 'wallpaper') return;
             wallpaperData.f.forEach(x => {
                 const n = x.n.toLowerCase();
                 if (n === 'filename') {
-                    data.default = x.f[0].trim();
+                    light = x.f[0].trim();
                 } else if (n === 'filename-dark') {
-                    data.dark = x.f[0].trim();
+                    dark = x.f[0].trim();
+                } else if (n === 'name') {
+                    name = x.f[0].trim();
                 }
             });
         });
-    
-        const defaultEmpty = data.default === '';
-        const darkEmpty = data.dark === '';
-    
-        if (defaultEmpty && darkEmpty) return null;
-        else if (defaultEmpty) data.default = data.dark;
-        else if (darkEmpty) data.dark = data.default;
-    
-        const defaultData = Gio.File.new_for_path(data.default);   
-        if (defaultData.query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR) return null; 
-    
-        const darkData = Gio.File.new_for_path(data.dark);   
-        if (darkData.query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR) return null; 
-    
-        return data;
-    }
+        const lightEmpty = light === '';
+        const darkEmpty = dark === '';
+        if (lightEmpty && darkEmpty) return;
+        else if (lightEmpty) light = dark;
+        else if (darkEmpty) dark = light;
+        if (Gio.File.new_for_path(light).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR ||
+            Gio.File.new_for_path(dark).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR) return; 
+        wallpapers.push(new WallpaperData(name, light, dark));
+    }));
+
+    // Handle manually added images
+    forEachFile(GLib.build_filenamev([GLib.get_user_data_dir(), 'backgrounds']), file => {
+        const path = file.get_path();
+        const pathLower = path.toLowerCase();
+        if (!pathLower.endsWith('.jpg') && !pathLower.endsWith('.jpeg') && !pathLower.endsWith('.png') && !pathLower.endsWith('.webp')) return;
+        wallpapers.push(new WallpaperData(file.get_basename(), path, path));
+    });
+
+    return wallpapers;
 }
 
-function _addXMLPath(paths, path) {
-    const directory = Gio.File.new_for_path(path);
-    if (directory.query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.DIRECTORY) return paths;
+/**
+ * Filter the active wallpapers from a list of wallpapers based on a list of names.
+ * 
+ * @param {Array<WallpaperData>} wallpapers 
+ * @param {Array<string>} activeWallpaperNames 
+ * @returns {Array<WallpaperData>} Active wallpapers
+ */
+function filterActiveWallpapers(wallpapers, activeWallpaperNames) {
+    return wallpapers.filter(data => activeWallpaperNames.includes(data.name)).sort((a, b) => activeWallpaperNames.indexOf(a.name) - activeWallpaperNames.indexOf(b.name));
+}
+
+/**
+ * Filter the inactive wallpapers from a list of wallpapers based on a list of names.
+ * 
+ * @param {Array<WallpaperData>} wallpapers 
+ * @param {Array<string>} activeWallpaperNames
+ * @returns {Array<WallpaperData>} Inactive wallpapers 
+ */
+function filterInactiveWallpapers(wallpapers, activeWallpaperNames) {
+    return wallpapers.filter(data => !activeWallpaperNames.includes(data.name)).sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name ? 1 : 0));
+}
+
+/**
+ * Convert a path to a file to a file uri.
+ * 
+ * @param {string} path 
+ * @returns {string} file uri
+ */
+function convertPathToURI(path) {
+    return `file://${encodeURI(path)}`;
+}
+
+/**
+ * Iterate over every file in a directory and run a function for each file.
+ * 
+ * @param {string} directoryPath 
+ * @param {Func<Gio.File>} func
+ */
+function forEachFile(directoryPath, func) {
+    const directory = Gio.File.new_for_path(directoryPath);
+    if (directory.query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.DIRECTORY) return;
     const enumerator = directory.enumerate_children('standard::', Gio.FileQueryInfoFlags.NONE, null);
     while (true) {
         const info = enumerator.next_file(null);
         if (info === null) break;
-        const xml = enumerator.get_child(info);
-        if (xml === null) continue;
-        const x = xml.get_path();
-        if (x.endsWith('.xml')) paths.add(x);
+        const file = enumerator.get_child(info);
+        if (file === null) continue;
+        func(file);
     }
-    return paths;
 }
-
-function convertPathToURI(path) {
-    return `file://${path.replace(' ', '%20')}`;
-}
-
-function getXMLs() {
-    return [
-        GLib.build_filenamev([GLib.get_user_data_dir(), 'gnome-background-properties']),
-        ...GLib.get_system_data_dirs().map(path => GLib.build_filenamev([path, 'gnome-background-properties']))
-    ].reduce(_addXMLPath, new Set());
-}
-
-function processXMLFromPath(path) {
-    const contents = GLib.file_get_contents(path);
-    return contents[0] ? processXML(contents[1]) : null;
-}
-
-function processXML(xmlText) {
-    if (xmlText instanceof Uint8Array) xmlText = ByteArray.toString(xmlText);
-    return parseXML(xmlText);
-}
-

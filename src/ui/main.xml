@@ -5,48 +5,36 @@
             <object class="AdwPreferencesGroup">
                 <child>
                     <object class="AdwActionRow">
-                        <property name="title">Ignore Inactive Occupied Workspaces</property>
-                        <property name="activatable-widget">ignore_inactive_occupied_workspaces</property>
+                        <property name="title">Timer</property>
+                        <property name="activatable-widget">timer</property>
                         <child>
-                            <object class="GtkSwitch" id="ignore_inactive_occupied_workspaces">
+                            <object class="GtkSpinButton" id="timer">
                                 <property name="valign">center</property>
+                                <property name="climb_rate">1</property>
+                                <property name="digits">0</property>
+                                <property name="numeric">true</property>
+                                <property name="adjustment">
+                                    <object class="GtkAdjustment">
+                                        <property name="lower">60</property>
+                                        <property name="upper">86400</property>
+                                        <property name="step-increment">1</property>
+                                        <property name="page-increment">60</property>
+                                    </object>
+                                </property>
                             </object>
                         </child>
                     </object>
                 </child>
-                <child>
-                    <object class="AdwActionRow">
-                        <property name="title">Keep Activities</property>
-                        <property name="activatable-widget">keep_activities</property>
-                        <child>
-                            <object class="GtkSwitch" id="keep_activities">
-                                <property name="valign">center</property>
-                            </object>
-                        </child>
-                    </object>
-                </child>
-                <child>
-                    <object class="AdwActionRow">
-                        <property name="title">Switch Workspaces By Panel Scroll</property>
-                        <property name="activatable-widget">panel_scroll</property>
-                        <child>
-                            <object class="GtkSwitch" id="panel_scroll">
-                                <property name="valign">center</property>
-                            </object>
-                        </child>
-                    </object>
-                </child>
-                <child>
-                    <object class="AdwActionRow">
-                        <property name="title">Wrap Workspaces</property>
-                        <property name="activatable-widget">wrap_workspaces</property>
-                        <child>
-                            <object class="GtkSwitch" id="wrap_workspaces">
-                                <property name="valign">center</property>
-                            </object>
-                        </child>
-                    </object>
-                </child>
+            </object>
+        </child>
+        <child>
+            <object class="AdwPreferencesGroup" id="active_wallpaper_list">
+                <property name="title">Active Wallpapers</property>
+            </object>
+        </child>
+        <child>
+            <object class="AdwPreferencesGroup" id="inactive_wallpaper_list">
+                <property name="title">Inactive Wallpapers</property>
             </object>
         </child>
     </object>

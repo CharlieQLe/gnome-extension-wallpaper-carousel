@@ -21,9 +21,10 @@
 /* exported init */
 
 const Main = imports.ui.main;
+const Mainloop = imports.mainloop;
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperManager } = Me.imports.common;
+const { WallpaperCarouselSettings, BackgroundSettings, convertPathToURI, getAllWallpapers, filterActiveWallpapers } = Me.imports.common;
 
 class Extension {
     constructor(uuid) {
@@ -31,11 +32,46 @@ class Extension {
     }
 
     enable() {
-        WallpaperManager.initialize();
+        this._settings = new WallpaperCarouselSettings();
+        this._backgroundSettings = new BackgroundSettings();
+        this._settings.onChangedOrder(this._refresh.bind(this));
+        this._refresh();
     }
 
     disable() {
-        WallpaperManager.destroy();
+        Mainloop.source_remove(this._updateLoop);
+        this._updateLoop = null;
+        this._wallpapers = null;
+        this._backgroundSettings = null;
+        this._settings = null;
+    }
+
+    _refresh() {
+        print("\nRefreshing carousel\n");
+        if (this._updateLoop !== null) {
+            Mainloop.source_remove(this._updateLoop);
+            this._updateLoop = null;
+        }
+        this._wallpapers = filterActiveWallpapers(getAllWallpapers(), this._settings.order);
+        this._timeInterval = this._settings.timer;
+        this._activeIndex = 0;
+        const data = this._wallpapers[this._activeIndex];
+        this._backgroundSettings.pictureUri = convertPathToURI(data.light);
+        this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
+        this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
+    }
+
+    _update() {
+        if (this._timeInterval !== this._settings.timer) {
+            Mainloop.source_remove(this._updateLoop);
+            this._timeInterval = this._settings.timer;
+            this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update);
+        }
+        this._activeIndex = (this._activeIndex + 1) % this._wallpapers.length;
+        const data = this._wallpapers[this._activeIndex];
+        this._backgroundSettings.pictureUri = convertPathToURI(data.light);
+        this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
+        return true;
     }
 }
 
