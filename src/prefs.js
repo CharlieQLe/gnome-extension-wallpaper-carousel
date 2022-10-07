@@ -45,6 +45,7 @@ function fillPreferencesWindow(window) {
         wallpapers.forEach((wallpaperData, index) => {
             const wallpaperRow = new Adw.ExpanderRow();
             wallpaperRow.title = wallpaperData.name;
+            wallpaperRow.set_subtitle(wallpaperData.path);
 
             // Switch
             const wallpaperToggle = new Gtk.Switch();

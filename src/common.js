@@ -108,8 +108,9 @@ var BackgroundSettings = class BackgroundSettings extends Settings {
 }
 
 var WallpaperData = class WallpaperData {
-    constructor(name, light, dark) {
+    constructor(name, path, light, dark) {
         this.name = name;
+        this.path = path;
         this.light = light;
         this.dark = dark;
     }
@@ -161,7 +162,7 @@ function getAllWallpapers() {
         else if (darkEmpty) dark = light;
         if (Gio.File.new_for_path(light).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR ||
             Gio.File.new_for_path(dark).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR) return; 
-        wallpapers.push(new WallpaperData(name, light, dark));
+        wallpapers.push(new WallpaperData(name, path, light, dark));
     }));
 
     // Handle manually added images
@@ -169,7 +170,7 @@ function getAllWallpapers() {
         const path = file.get_path();
         const pathLower = path.toLowerCase();
         if (!pathLower.endsWith('.jpg') && !pathLower.endsWith('.jpeg') && !pathLower.endsWith('.png') && !pathLower.endsWith('.webp')) return;
-        wallpapers.push(new WallpaperData(file.get_basename(), path, path));
+        wallpapers.push(new WallpaperData(file.get_basename(), path, path, path));
     });
 
     return wallpapers.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name ? 1 : 0));
