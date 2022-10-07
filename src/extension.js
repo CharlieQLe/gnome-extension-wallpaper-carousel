@@ -70,6 +70,10 @@ class Extension {
         this._settings = null;
     }
 
+    _getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
     _refresh() {
         if (this._updateLoop !== null) {
             Mainloop.source_remove(this._updateLoop);
@@ -77,7 +81,7 @@ class Extension {
         }
         this._wallpapers = filterActiveWallpapers(getAllWallpapers(), this._settings.order);
         this._timeInterval = this._settings.timer;
-        this._activeIndex = 0;
+        this._activeIndex = this._settings.randomStart ? this._getRandomInt(this._wallpapers.length) : 0;
         const data = this._wallpapers[this._activeIndex];
         this._backgroundSettings.pictureUri = convertPathToURI(data.light);
         this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
@@ -90,7 +94,7 @@ class Extension {
             this._timeInterval = this._settings.timer;
             this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update);
         }
-        this._activeIndex = (this._activeIndex + 1) % this._wallpapers.length;
+        this._activeIndex = (this._activeIndex + 1 + (this._settings.randomNext ? this._getRandomInt(this._wallpapers.length - 1) : 0)) % this._wallpapers.length;
         const data = this._wallpapers[this._activeIndex];
         this._backgroundSettings.pictureUri = convertPathToURI(data.light);
         this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);

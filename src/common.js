@@ -27,6 +27,14 @@ var Settings = class Settings {
         this._schema.set_int(key, value); 
     }
 
+    getBoolean(key) { 
+        return this._schema.get_boolean(key); 
+    }
+
+    setBoolean(key, value) { 
+        this._schema.set_boolean(key, value); 
+    }
+
     getString(key) { 
         return this._schema.get_string(key); 
     }
@@ -46,6 +54,8 @@ var Settings = class Settings {
 
 var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
     static TIMER = 'timer';
+    static RANDOM_START = 'random-start';
+    static RANDOM_NEXT = 'random-next';
     static ORDER = 'order';
 
     static getNewSchema() {
@@ -61,12 +71,16 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
         return this.getInt(WallpaperCarouselSettings.TIMER);
     }
 
-    set timer(time) {
-        this.setInt(WallpaperCarouselSettings.TIMER, time);
-    }
-
     onChangedTimer(func) {
         this.onChanged(WallpaperCarouselSettings.TIMER, func);
+    }
+
+    get randomStart() {
+        return this.getBoolean(WallpaperCarouselSettings.RANDOM_START);
+    }
+
+    get randomNext() {
+        return this.getBoolean(WallpaperCarouselSettings.RANDOM_NEXT);
     }
 
     get order() {

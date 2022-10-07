@@ -28,6 +28,12 @@ function fillPreferencesWindow(window) {
     builder.add_from_file(`${Me.path}/ui/main.xml`);
     window.add(builder.get_object('general'));
 
+    // Link entries
+    const randomStartSwitch = builder.get_object(WallpaperCarouselSettings.RANDOM_START.replaceAll('-', '_'));
+    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.RANDOM_START, randomStartSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+    const randomNextSwitch = builder.get_object(WallpaperCarouselSettings.RANDOM_NEXT.replaceAll('-', '_'));
+    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.RANDOM_NEXT, randomNextSwitch, 'active', Gio.SettingsBindFlags.DEFAULT);
+
     // Handle the timer
     const timerSpinButton = builder.get_object(WallpaperCarouselSettings.TIMER.replaceAll('-', '_'));
     wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.TIMER, timerSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
@@ -168,20 +174,6 @@ function _createButtonLabelled(label, onClicked) {
     button.set_label(label);
     button.vexpand = false;
     button.connect("clicked", onClicked);
-    return button;
-}
-
-/**
- * Create a link button.
- * 
- * @param {string} uri 
- * @param {string} label 
- * @returns {Gtk.LinkButton} Link button
- */
-function _createLinkButton(uri, label) {
-    const button = Gtk.LinkButton.new_with_label(uri, label);
-    button.set_valign(Gtk.Align.CENTER);
-    button.vexpand = false;
     return button;
 }
 
