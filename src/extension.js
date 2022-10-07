@@ -55,6 +55,8 @@ class Extension {
         this._backgroundSettings = new BackgroundSettings();
         this._settings.onChangedOrder(this._refresh.bind(this));
         this._refresh();
+
+        // Quick settings
         this._toggle = new NextWallpaperToggle();
         this._toggle.connect("clicked", this._update.bind(this));
         QuickSettingsMenu._addItems([this._toggle]);
@@ -88,17 +90,30 @@ class Extension {
         this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
     }
 
-    _update() {
+    _updateIndex(nextIndex) {
         if (this._timeInterval !== this._settings.timer) {
             Mainloop.source_remove(this._updateLoop);
             this._timeInterval = this._settings.timer;
             this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update);
         }
-        this._activeIndex = (this._activeIndex + 1 + (this._settings.randomNext ? this._getRandomInt(this._wallpapers.length - 1) : 0)) % this._wallpapers.length;
+        this._activeIndex = nextIndex % this._wallpapers.length;
         const data = this._wallpapers[this._activeIndex];
         this._backgroundSettings.pictureUri = convertPathToURI(data.light);
         this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
         return true;
+    }
+
+    _updateNext() {
+        return this._updateIndex(this._activeIndex + 1);
+    }
+
+    _updateRandom() {
+        return this._updateIndex(this._activeIndex + 1 + this._getRandomInt(this._wallpapers.length - 1));
+    }
+
+    _update() {
+        if (this._settings.randomNext) return this._updateRandom();
+        return this._updateNext();
     }
 }
 
