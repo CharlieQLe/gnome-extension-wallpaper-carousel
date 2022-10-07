@@ -23,7 +23,7 @@ After the installation, simply log out and log back in and it should show up in 
 
 ## TODO
 
-* Adjust randomization algorithm to ignore visited wallpapers until all wallpapers have been visited
+* Support the lock screen
 * Support transition wallpapers
 * Publish on [extensions.gnome.org]()
 

@@ -29,7 +29,7 @@ const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings, BackgroundSettings, convertPathToURI, getAllWallpapers, filterActiveWallpapers } = Me.imports.common;
+const { WallpaperCarouselSettings, BackgroundSettings, getAllWallpapers } = Me.imports.common;
 
 const NextWallpaperToggle = class NextWallpaperToggle extends QuickSettings.QuickToggle {
     static {
@@ -85,8 +85,8 @@ class Extension {
     _setWallpaper() {
         const data = this._queuedWallpapers.splice(Math.floor(Math.random() * this._queuedWallpapers.length), 1)[0];
         this._visitedWallpapers.push(data.name);
-        this._backgroundSettings.pictureUri = convertPathToURI(data.light);
-        this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
+        this._backgroundSettings.pictureUri = data.light;
+        this._backgroundSettings.pictureUriDark = data.dark;
         if (this._queuedWallpapers.length === 0) this._resetWallpapers();
     }
 

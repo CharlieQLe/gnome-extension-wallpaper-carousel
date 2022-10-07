@@ -60,11 +60,11 @@ function fillPreferencesWindow(window) {
 
             // Details
             const detailsRow = new Adw.ActionRow();
-            if (wallpaperData.light === wallpaperData.dark) {
-                detailsRow.add_suffix(_createButton("Open Wallpaper", () => Gtk.show_uri(window, convertPathToURI(wallpaperData.light), Gdk.CURRENT_TIME)));
-            } else {
-                detailsRow.add_suffix(_createButton("Open Light Wallpaper", () => Gtk.show_uri(window, convertPathToURI(wallpaperData.light), Gdk.CURRENT_TIME)));
-                detailsRow.add_suffix(_createButton("Open Dark Wallpaper", () => Gtk.show_uri(window, convertPathToURI(wallpaperData.dark), Gdk.CURRENT_TIME)));
+            if (wallpaperData.path.endsWith('.xml')) detailsRow.add_prefix(_createButton("Open XML", () => Gtk.show_uri(window, convertPathToURI(wallpaperData.path), Gdk.CURRENT_TIME)));
+            if (wallpaperData.light === wallpaperData.dark) detailsRow.add_suffix(_createButton("Open Wallpaper", () => Gtk.show_uri(window, wallpaperData.light, Gdk.CURRENT_TIME)));
+            else {
+                detailsRow.add_suffix(_createButton("Open Light Wallpaper", () => Gtk.show_uri(window, wallpaperData.light, Gdk.CURRENT_TIME)));
+                detailsRow.add_suffix(_createButton("Open Dark Wallpaper", () => Gtk.show_uri(window, wallpaperData.dark, Gdk.CURRENT_TIME)));
             }
             wallpaperRow.add_row(detailsRow);
 

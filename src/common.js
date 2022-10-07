@@ -162,7 +162,7 @@ function getAllWallpapers() {
         else if (darkEmpty) dark = light;
         if (Gio.File.new_for_path(light).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR ||
             Gio.File.new_for_path(dark).query_file_type(Gio.FileQueryInfoFlags.NONE, null) !== Gio.FileType.REGULAR) return; 
-        wallpapers.push(new WallpaperData(name, path, light, dark));
+        wallpapers.push(new WallpaperData(name, path, convertPathToURI(light), convertPathToURI(dark)));
     }));
 
     // Handle manually added images
