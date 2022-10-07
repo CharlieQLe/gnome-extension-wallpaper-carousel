@@ -45,6 +45,7 @@ function fillPreferencesWindow(window) {
     let inactiveWallpaperWidgetChildren = [];
     let order = wallpaperCarouselSettings.order;
 
+    wallpaperCarouselSettings.onChangedRandomNext(() => rebuild());
     rebuild();
 
     function rebuild() {
@@ -78,7 +79,7 @@ function fillPreferencesWindow(window) {
                     order.splice(index + 1, 0, order.splice(index, 1));
                     rebuild();
                 });
-                downButton.set_sensitive(index < activeWallpapers.length - 1);
+                downButton.set_sensitive(!wallpaperCarouselSettings.randomNext && index < activeWallpapers.length - 1);
                 wallpaperRow.add_action(downButton);
                 
                 // Button to move up
@@ -86,7 +87,7 @@ function fillPreferencesWindow(window) {
                     order.splice(index - 1, 0, order.splice(index, 1));
                     rebuild();
                 });
-                upButton.set_sensitive(index > 0);
+                upButton.set_sensitive(!wallpaperCarouselSettings.randomNext && index > 0);
                 wallpaperRow.add_action(upButton);
 
                 // Details row

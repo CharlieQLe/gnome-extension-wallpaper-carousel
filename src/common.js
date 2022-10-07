@@ -83,6 +83,10 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
         return this.getBoolean(WallpaperCarouselSettings.RANDOM_NEXT);
     }
 
+    onChangedRandomNext(func) {
+        this.onChanged(WallpaperCarouselSettings.RANDOM_NEXT, func);
+    }
+
     get order() {
         return this.getStrv(WallpaperCarouselSettings.ORDER);
     }
