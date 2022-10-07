@@ -53,12 +53,11 @@ class Extension {
     enable() {
         this._settings = new WallpaperCarouselSettings();
         this._backgroundSettings = new BackgroundSettings();
-        this._updateActiveWallpapers();
         this._timeInterval = this._settings.timer;
-        this._activeIndex = this._getRandomInt(this._activeWallpapers.length);
+        this._resetWallpapers();
 
         // Initial wallpaper
-        this._setWallpaperToActive();
+        this._setWallpaper();
         
         // Quick settings
         this._toggle = new NextWallpaperToggle();
@@ -66,9 +65,10 @@ class Extension {
         QuickSettingsMenu._addItems([this._toggle]);
 
         // Start the loop
-        this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update);
+        this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
 
-        this._settings.onChangedOrder(this._updateActiveWallpapers.bind(this));
+        // Update the wallpapers on change
+        this._settings.onChangedOrder(this._updateQueuedWallpapers.bind(this));
     }
 
     disable() {
@@ -76,24 +76,30 @@ class Extension {
         this._updateLoop = null;
         this._toggle.destroy();
         this._toggle = null;
-        this._activeWallpapers = null;
+        this._queuedWallpapers = null;
+        this._visitedWallpapers = null;
         this._backgroundSettings = null;
         this._settings = null;
     }
 
-    _getRandomInt(max) {
-        return Math.floor(Math.random() * max);
-    }
-
-    _setWallpaperToActive() {
-        const data = this._activeWallpapers[this._activeIndex];
+    _setWallpaper() {
+        const data = this._queuedWallpapers.splice(Math.floor(Math.random() * this._queuedWallpapers.length), 1)[0];
+        this._visitedWallpapers.push(data.name);
         this._backgroundSettings.pictureUri = convertPathToURI(data.light);
         this._backgroundSettings.pictureUriDark = convertPathToURI(data.dark);
+        if (this._queuedWallpapers.length === 0) this._resetWallpapers();
     }
 
-    _updateActiveWallpapers() {
+    _updateQueuedWallpapers() {
         const order = this._settings.order;
-        this._activeWallpapers = getAllWallpapers().filter(wallpaperData => order.includes(wallpaperData.name));
+        this._queuedWallpapers = getAllWallpapers().filter(wallpaperData => order.includes(wallpaperData.name) && !this._visitedWallpapers.includes(wallpaperData.name));
+        if (this._queuedWallpapers.length === 0) this._resetWallpapers();
+    }
+
+    _resetWallpapers() {
+        this._visitedWallpapers = [];
+        const order = this._settings.order;
+        this._queuedWallpapers = getAllWallpapers().filter(wallpaperData => order.includes(wallpaperData.name));
     }
 
     _update() {
@@ -101,10 +107,9 @@ class Extension {
         if (this._timeInterval !== timer) {
             Mainloop.source_remove(this._updateLoop);
             this._timeInterval = timer;
-            this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update);
+            this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
         }
-        this._activeIndex = (this._activeIndex + 1 + this._getRandomInt(this._activeWallpapers.length - 1)) % this._activeWallpapers.length;
-        this._setWallpaperToActive();
+        this._setWallpaper();
         return true;
     }
 }
