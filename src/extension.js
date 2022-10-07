@@ -20,11 +20,30 @@
 
 /* exported init */
 
-const Main = imports.ui.main;
+const { GObject } = imports.gi;
+
 const Mainloop = imports.mainloop;
+
+const QuickSettings = imports.ui.quickSettings;
+const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
+
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const { WallpaperCarouselSettings, BackgroundSettings, convertPathToURI, getAllWallpapers, filterActiveWallpapers } = Me.imports.common;
+
+const NextWallpaperToggle = class NextWallpaperToggle extends QuickSettings.QuickToggle {
+    static {
+        GObject.registerClass(this);
+    }
+
+    _init() {
+        super._init({
+            label: 'Next Wallpaper',
+            iconName: 'preferences-desktop-wallpaper-symbolic',
+            toggleMode: false,
+        });
+    }
+}
 
 class Extension {
     constructor(uuid) {
@@ -36,10 +55,15 @@ class Extension {
         this._backgroundSettings = new BackgroundSettings();
         this._settings.onChangedOrder(this._refresh.bind(this));
         this._refresh();
+        this._toggle = new NextWallpaperToggle();
+        this._toggle.connect("clicked", this._update.bind(this));
+        QuickSettingsMenu._addItems([this._toggle]);
     }
 
     disable() {
         Mainloop.source_remove(this._updateLoop);
+        this._toggle.destroy();
+        this._toggle = null;
         this._updateLoop = null;
         this._wallpapers = null;
         this._backgroundSettings = null;
@@ -47,7 +71,6 @@ class Extension {
     }
 
     _refresh() {
-        print("\nRefreshing carousel\n");
         if (this._updateLoop !== null) {
             Mainloop.source_remove(this._updateLoop);
             this._updateLoop = null;

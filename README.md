@@ -6,11 +6,11 @@ An extension that provides a wallpaper changer that cycles between local wallpap
 
 ## What versions of GNOME does WALLPAPER CAROUSEL support?
 
-It should likely support GNOME 42, and would absolutely work with GNOME 43.
+At the time of writing, WALLPAPER CAROUSEL only supports GNOME 43 due to the usage of quick settings.
 
 ## How do I install?
 
-Tar packages are not available yet.
+Tar packages, nor a published extension are not available yet.
 
 The source can be used by cloning this repository and running the install script like so:
 
@@ -24,7 +24,6 @@ After the installation, simply log out and log back in and it should show up in 
 ## TODO
 
 * If possible, change the appearance of the preferences to use draggable rows or use the same widgets as the Appearance menu in Settings
-* Provide an option to skip to the next wallpaper
 * Support transition wallpapers
 * Publish on [extensions.gnome.org]()
 
