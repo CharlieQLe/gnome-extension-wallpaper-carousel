@@ -4,12 +4,6 @@
         <key name="timer" type="i">
             <default>3600</default>
         </key>
-        <key name="random-start" type="b">
-            <default>true</default>
-        </key>
-        <key name="random-next" type="b">
-            <default>false</default>
-        </key>
         <key name="order" type="as">
             <default>[]</default>
         </key>

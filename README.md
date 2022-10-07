@@ -23,7 +23,7 @@ After the installation, simply log out and log back in and it should show up in 
 
 ## TODO
 
-* If possible, change the appearance of the preferences to use draggable rows or use the same widgets as the Appearance menu in Settings
+* Adjust randomization algorithm to ignore visited wallpapers until all wallpapers have been visited
 * Support transition wallpapers
 * Publish on [extensions.gnome.org]()
 

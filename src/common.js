@@ -27,14 +27,6 @@ var Settings = class Settings {
         this._schema.set_int(key, value); 
     }
 
-    getBoolean(key) { 
-        return this._schema.get_boolean(key); 
-    }
-
-    setBoolean(key, value) { 
-        this._schema.set_boolean(key, value); 
-    }
-
     getString(key) { 
         return this._schema.get_string(key); 
     }
@@ -54,8 +46,6 @@ var Settings = class Settings {
 
 var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
     static TIMER = 'timer';
-    static RANDOM_START = 'random-start';
-    static RANDOM_NEXT = 'random-next';
     static ORDER = 'order';
 
     static getNewSchema() {
@@ -73,18 +63,6 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
 
     onChangedTimer(func) {
         this.onChanged(WallpaperCarouselSettings.TIMER, func);
-    }
-
-    get randomStart() {
-        return this.getBoolean(WallpaperCarouselSettings.RANDOM_START);
-    }
-
-    get randomNext() {
-        return this.getBoolean(WallpaperCarouselSettings.RANDOM_NEXT);
-    }
-
-    onChangedRandomNext(func) {
-        this.onChanged(WallpaperCarouselSettings.RANDOM_NEXT, func);
     }
 
     get order() {
@@ -194,29 +172,27 @@ function getAllWallpapers() {
         wallpapers.push(new WallpaperData(file.get_basename(), path, path));
     });
 
-    return wallpapers;
+    return wallpapers.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name ? 1 : 0));
 }
 
 /**
- * Filter the active wallpapers from a list of wallpapers based on a list of names.
+ * Get the active wallpapers from a list of wallpapers based on a list of names.
  * 
  * @param {Array<WallpaperData>} wallpapers 
  * @param {Array<string>} activeWallpaperNames 
  * @returns {Array<WallpaperData>} Active wallpapers
  */
-function filterActiveWallpapers(wallpapers, activeWallpaperNames) {
-    return wallpapers.filter(data => activeWallpaperNames.includes(data.name)).sort((a, b) => activeWallpaperNames.indexOf(a.name) - activeWallpaperNames.indexOf(b.name));
+function getActiveWallpapers(wallpapers, activeWallpaperNames) {
+    return wallpapers.filter(data => activeWallpaperNames.includes(data.name));
 }
 
 /**
- * Filter the inactive wallpapers from a list of wallpapers based on a list of names.
+ * Sort wallpapers by their names.
  * 
  * @param {Array<WallpaperData>} wallpapers 
- * @param {Array<string>} activeWallpaperNames
- * @returns {Array<WallpaperData>} Inactive wallpapers 
  */
-function filterInactiveWallpapers(wallpapers, activeWallpaperNames) {
-    return wallpapers.filter(data => !activeWallpaperNames.includes(data.name)).sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name ? 1 : 0));
+function sortWallpapers(wallpapers) {
+    wallpapers.sort((a, b) => (a.name < b.name) ? -1 : (a.name > b.name ? 1 : 0));
 }
 
 /**
