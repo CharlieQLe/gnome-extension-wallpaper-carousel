@@ -52,11 +52,12 @@ var WallpaperUtility = class {
      * @returns {Array<WallpaperData>} Wallpapers
      */
     static getAllWallpapers() {
-        return [
+        const wallpapers = [
             ...this.getWallpapersForDirectoryFromXML(XML_USER_DIRECTORY),
-            ...XML_SYSTEM_DIRECTORIES.map(directory => this.getWallpapersForDirectoryFromXML(directory)),
             ...this.getWallpapersForDirectoryFromImage(IMAGE_USER_DIRECTORY)
         ];
+        XML_SYSTEM_DIRECTORIES.map(directory => wallpapers.push(...this.getWallpapersForDirectoryFromXML(directory)));
+        return wallpapers;
     }
 
     /**

@@ -37,21 +37,23 @@ function fillPreferencesWindow(window) {
     const wallpaperListWidget = builder.get_object("wallpaper_list");
     const wallpapers = WallpaperUtility.getAllWallpapers();
     const order = wallpaperCarouselSettings.order;
-    
+
     if (wallpapers.length === 0) {
         const row = new Adw.ActionRow();
         row.title = "No wallpapers found";
         wallpaperListWidget.add(row);
     } else {
         wallpapers.forEach((wallpaperData, index) => {
-            const wallpaperRow = new Adw.ExpanderRow();
-            wallpaperRow.title = wallpaperData.name;
-            wallpaperRow.set_subtitle(wallpaperData.path);
+            const wallpaperRow = new Adw.ExpanderRow({
+                title: wallpaperData.name,
+                subtitle: wallpaperData.path
+            });
 
             // Switch
-            const wallpaperToggle = new Gtk.Switch();
-            wallpaperToggle.set_valign(Gtk.Align.CENTER);
-            wallpaperToggle.set_state(order.includes(wallpaperData.name));
+            const wallpaperToggle = new Gtk.Switch({
+                valign: Gtk.Align.CENTER,
+                state: order.includes(wallpaperData.name)
+            });
             wallpaperToggle.connect("state-set", (_, state) => {
                 if (state) order.push(decodeURI(wallpaperData.name));
                 else order.splice(index, 1);
@@ -83,10 +85,11 @@ function fillPreferencesWindow(window) {
  * @returns {Gtk.Button} Button 
  */
 function _createButton(label, onClicked) {
-    const button = new Gtk.Button();
-    button.set_valign(Gtk.Align.CENTER);
-    button.set_label(label);
-    button.vexpand = false;
+    const button = new Gtk.Button({
+        valign: Gtk.Align.CENTER,
+        vexpand: false,
+        label: label
+    });
     button.connect("clicked", onClicked);
     return button;
 }
