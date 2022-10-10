@@ -4,7 +4,8 @@ const { Adw, Gio, GLib, Gtk, Gdk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings, convertPathToURI, getAllWallpapers } = Me.imports.common;
+const { WallpaperCarouselSettings, convertPathToURI } = Me.imports.common;
+const { WallpaperUtility } = Me.imports.wallpaperUtils;
 
 /**
  * Like `extension.js` this is used for any one-time setup like translations.
@@ -34,7 +35,7 @@ function fillPreferencesWindow(window) {
 
     // Get the widgets
     const wallpaperListWidget = builder.get_object("wallpaper_list");
-    const wallpapers = getAllWallpapers();
+    const wallpapers = WallpaperUtility.getAllWallpapers();
     const order = wallpaperCarouselSettings.order;
     
     if (wallpapers.length === 0) {

@@ -29,7 +29,8 @@ const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings, BackgroundSettings, getAllWallpapers } = Me.imports.common;
+const { WallpaperCarouselSettings, BackgroundSettings } = Me.imports.common;
+const { WallpaperUtility } = Me.imports.wallpaperUtils;
 
 const NextWallpaperToggle = class NextWallpaperToggle extends QuickSettings.QuickToggle {
     static {
@@ -85,21 +86,23 @@ class Extension {
     _setWallpaper() {
         const data = this._queuedWallpapers.splice(Math.floor(Math.random() * this._queuedWallpapers.length), 1)[0];
         this._visitedWallpapers.push(data.name);
-        this._backgroundSettings.pictureUri = data.light;
-        this._backgroundSettings.pictureUriDark = data.dark;
+        this._backgroundSettings.pictureUri = data.lightUri;
+        this._backgroundSettings.pictureUriDark = data.darkUri;
         if (this._queuedWallpapers.length === 0) this._resetWallpapers();
     }
 
     _updateQueuedWallpapers() {
-        const order = this._settings.order;
-        this._queuedWallpapers = getAllWallpapers().filter(wallpaperData => order.includes(wallpaperData.name) && !this._visitedWallpapers.includes(wallpaperData.name));
+        this._queuedWallpapers = this._getActiveWallpapers().filter(wallpaperData => !this._visitedWallpapers.includes(wallpaperData.name));
         if (this._queuedWallpapers.length === 0) this._resetWallpapers();
     }
 
     _resetWallpapers() {
         this._visitedWallpapers = [];
-        const order = this._settings.order;
-        this._queuedWallpapers = getAllWallpapers().filter(wallpaperData => order.includes(wallpaperData.name));
+        this._queuedWallpapers = this._getActiveWallpapers();
+    }
+
+    _getActiveWallpapers() {
+        return WallpaperUtility.getActiveWallpapers(WallpaperUtility.getAllWallpapers(), this._settings.order);
     }
 
     _update() {
