@@ -7,9 +7,12 @@ const Me = ExtensionUtils.getCurrentExtension();
 const { convertPathToURI, forEachFile } = Me.imports.common;
 const { parseXML } = Me.imports.xmlParser;
 
-var XML_USER_DIRECTORY = GLib.build_filenamev([GLib.get_user_data_dir(), 'gnome-background-properties']);
-var XML_SYSTEM_DIRECTORIES = GLib.get_system_data_dirs().map(path => GLib.build_filenamev([path, 'gnome-background-properties']));
-var IMAGE_USER_DIRECTORY = GLib.build_filenamev([GLib.get_user_data_dir(), 'backgrounds']);
+var USER_DIRECTORY_XML = GLib.build_filenamev([GLib.get_user_data_dir(), 'gnome-background-properties']);
+var USER_DIRECTORY_IMAGE = GLib.build_filenamev([GLib.get_user_data_dir(), 'backgrounds']);
+var USER_DIRECTORIES = [USER_DIRECTORY_XML, USER_DIRECTORY_IMAGE];
+var SYSTEM_DIRECTORY_XML = GLib.build_filenamev(['/usr/share', 'gnome-background-properties']);
+var SYSTEM_DIRECTORY_IMAGE = GLib.build_filenamev(['/usr/share', 'backgrounds']);
+var SYSTEM_DIRECTORIES = [SYSTEM_DIRECTORY_XML, SYSTEM_DIRECTORY_IMAGE];
 
 var WallpaperData = class {
     constructor(name, fileName, path, lightUri, darkUri) {
@@ -47,17 +50,36 @@ var WallpaperData = class {
 
 var WallpaperUtility = class {
     /**
+     * Get the user wallpapers.
+     * 
+     * @returns {Array<string>} Wallpapers
+     */
+    static getUserWallpapers() {
+        return [
+            ...this.getWallpapersForDirectoryFromXML(USER_DIRECTORY_XML),
+            ...this.getWallpapersForDirectoryFromImage(USER_DIRECTORY_IMAGE)
+        ];
+    }
+
+    /**
+     * Get the system wallpapers.
+     * 
+     * @returns {Array<string>} Wallpapers
+     */
+    static getSystemWallpapers() {
+        return [
+            ...this.getWallpapersForDirectoryFromXML(SYSTEM_DIRECTORY_XML),
+            ...this.getWallpapersForDirectoryFromImage(SYSTEM_DIRECTORY_IMAGE)
+        ];
+    }
+
+    /**
      * Get all wallpapers.
      * 
      * @returns {Array<WallpaperData>} Wallpapers
      */
     static getAllWallpapers() {
-        const wallpapers = [
-            ...this.getWallpapersForDirectoryFromXML(XML_USER_DIRECTORY),
-            ...this.getWallpapersForDirectoryFromImage(IMAGE_USER_DIRECTORY)
-        ];
-        XML_SYSTEM_DIRECTORIES.map(directory => wallpapers.push(...this.getWallpapersForDirectoryFromXML(directory)));
-        return wallpapers;
+        return [...this.getUserWallpapers(), ...this.getSystemWallpapers()];
     }
 
     /**

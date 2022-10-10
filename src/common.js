@@ -47,6 +47,7 @@ var Settings = class Settings {
 var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
     static TIMER = 'timer';
     static ORDER = 'order';
+    static DIRECTORIES = 'directories';
 
     static getNewSchema() {
         const extensionUtils = imports.misc.extensionUtils;
@@ -75,6 +76,18 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
 
     onChangedOrder(func) {
         this.onChanged(WallpaperCarouselSettings.ORDER, func);
+    }
+
+    get directories() {
+        return this.getStrv(WallpaperCarouselSettings.DIRECTORIES);
+    }
+
+    set directories(directories) {
+        this.setStrv(WallpaperCarouselSettings.DIRECTORIES, directories);
+    }
+
+    onChangedDirectories(func) {
+        this.onChanged(WallpaperCarouselSettings.DIRECTORIES, func);
     }
 }
 
