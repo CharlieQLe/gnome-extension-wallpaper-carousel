@@ -84,6 +84,7 @@ class Extension {
     }
 
     _setWallpaper() {
+        if (this._queuedWallpapers === 0) return;
         const data = this._queuedWallpapers.splice(Math.floor(Math.random() * this._queuedWallpapers.length), 1)[0];
         this._visitedWallpapers.push(data.name);
         this._backgroundSettings.pictureUri = data.lightUri;
