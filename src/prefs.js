@@ -4,7 +4,8 @@ const { Adw, Gio, GLib, Gtk, Gdk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings, convertPathToURI } = Me.imports.common;
+const { WallpaperCarouselSettings } = Me.imports.settings;
+const { convertPathToURI } = Me.imports.common;
 const { WallpaperUtility } = Me.imports.wallpaperUtils;
 
 /**
@@ -30,19 +31,31 @@ function fillPreferencesWindow(window) {
     window.add(builder.get_object('general'));
 
     // Handle the timer
-    const timerSpinButton = builder.get_object(WallpaperCarouselSettings.TIMER.replaceAll('-', '_'));
-    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.TIMER, timerSpinButton, 'value', Gio.SettingsBindFlags.DEFAULT);
+    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.TIMER, builder.get_object(WallpaperCarouselSettings.TIMER.replaceAll('-', '_')), 'value', Gio.SettingsBindFlags.DEFAULT);
+
+    // Handle use blacklist
+    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.USE_BLACKLIST, builder.get_object(WallpaperCarouselSettings.USE_BLACKLIST.replaceAll('-', '_')), 'active', Gio.SettingsBindFlags.DEFAULT);
 
     // Get the widgets
     const wallpaperListWidget = builder.get_object("wallpaper_list");
+    const wallpaperToggles = [];
+    
+    // Get wallpapers
     const wallpapers = WallpaperUtility.getAllWallpapers();
-    const order = wallpaperCarouselSettings.order;
 
+    // Get blacklist toggle
+    const useBlacklist = wallpaperCarouselSettings.useBlacklist;
+    
+    // Build rows
     if (wallpapers.length === 0) {
-        const row = new Adw.ActionRow();
-        row.title = "No wallpapers found";
-        wallpaperListWidget.add(row);
+        // Handle the case of no wallpapers
+        wallpaperListWidget.add(new Adw.ActionRow({ title: "No wallpapers found" }));
     } else {
+        const whitelist = wallpaperCarouselSettings.whitelist;
+        const blacklist = wallpaperCarouselSettings.blacklist;
+        const targetList = useBlacklist ? blacklist : whitelist;
+
+        // Handle the case of any wallpapers
         wallpapers.forEach((wallpaperData, index) => {
             const wallpaperRow = new Adw.ExpanderRow({
                 title: wallpaperData.name,
@@ -52,12 +65,13 @@ function fillPreferencesWindow(window) {
             // Switch
             const wallpaperToggle = new Gtk.Switch({
                 valign: Gtk.Align.CENTER,
-                state: order.includes(wallpaperData.name)
+                state: targetList.includes(wallpaperData.name)
             });
             wallpaperToggle.connect("state-set", (_, state) => {
-                if (state) order.push(decodeURI(wallpaperData.name));
-                else order.splice(index, 1);
-                wallpaperCarouselSettings.order = order;
+                if (state) targetList.push(decodeURI(wallpaperData.name));
+                else targetList.splice(index, 1);
+                if (useBlacklist) wallpaperCarouselSettings.blacklist = targetList;
+                else wallpaperCarouselSettings.whitelist = targetList;
             });
             wallpaperRow.add_action(wallpaperToggle);
 
@@ -73,8 +87,18 @@ function fillPreferencesWindow(window) {
 
             // Add row to widget
             wallpaperListWidget.add(wallpaperRow);
+            wallpaperToggles.push({
+                name: wallpaperData.name,
+                toggle: wallpaperToggle
+            });
         });
     }
+
+    // Change states as needed
+    wallpaperCarouselSettings.onChangedUseBlacklist(() => {
+        const targetList = wallpaperCarouselSettings.useBlacklist ? wallpaperCarouselSettings.blacklist : wallpaperCarouselSettings.whitelist;
+        wallpaperToggles.forEach(data => data.toggle.state = targetList.includes(data.name))
+    });
 }
 
 /**

@@ -168,18 +168,7 @@ var WallpaperUtility = class {
         });
         return wallpapers;
     }
-
-    /**
-     * Get the active wallpapers from a list of wallpapers based on a list of names.
-     * 
-     * @param {Array<WallpaperData>} wallpapers 
-     * @param {Array<string>} activeWallpaperNames 
-     * @returns {Array<WallpaperData>} Active wallpapers
-     */
-    static getActiveWallpapers(wallpapers, activeWallpaperNames) {
-        return wallpapers.filter(data => activeWallpaperNames.includes(data.name));
-    }
-
+    
     /**
      * Sort wallpapers by their names.
      * 

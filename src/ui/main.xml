@@ -26,6 +26,18 @@
                         </child>
                     </object>
                 </child>
+                <child>
+                    <object class="AdwActionRow">
+                        <property name="title">Use Blacklist</property>
+                        <property name="subtitle">If enabled, blacklist unwanted wallpapers</property>
+                        <property name="activatable-widget">use_blacklist</property>
+                        <child>
+                            <object class="GtkSwitch" id="use_blacklist">
+                                <property name="valign">center</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
             </object>
         </child>
         <child>

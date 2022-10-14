@@ -20,7 +20,7 @@
 
 /* exported init */
 
-const { GObject } = imports.gi;
+const { Gio, GObject } = imports.gi;
 
 const Mainloop = imports.mainloop;
 
@@ -29,8 +29,8 @@ const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings, BackgroundSettings } = Me.imports.common;
-const { WallpaperUtility } = Me.imports.wallpaperUtils;
+const { WallpaperCarouselSettings, BackgroundSettings } = Me.imports.settings;
+const { USER_DIRECTORY_IMAGE, WallpaperUtility } = Me.imports.wallpaperUtils;
 
 const NextWallpaperToggle = class NextWallpaperToggle extends QuickSettings.QuickToggle {
     static {
@@ -69,7 +69,14 @@ class Extension {
         this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
 
         // Update the wallpapers on change
-        this._settings.onChangedOrder(this._updateQueuedWallpapers.bind(this));
+        this._settings.onChangedUseBlacklist(this._updateQueuedWallpapers.bind(this));
+        this._settings.onChangedWhitelist(this._updateQueuedWallpapers.bind(this));
+        this._settings.onChangedBlacklist(this._updateQueuedWallpapers.bind(this));
+
+        // Monitor directory
+        this._userBackground = Gio.File.new_for_path(USER_DIRECTORY_IMAGE);
+        this._fileMonitor = this._userBackground.monitor(Gio.FileMonitorFlags.WATCH_MOVES, null);
+        this._fileMonitor.connect("changed", this._directoryChanged.bind(this));
     }
 
     disable() {
@@ -81,10 +88,18 @@ class Extension {
         this._visitedWallpapers = null;
         this._backgroundSettings = null;
         this._settings = null;
+        this._userBackground = null;
+        this._fileMonitor = null;
+    }
+
+    _directoryChanged(fileMonitor, file, otherFile, eventType) {
+        if (this._settings.useBlacklist) this._settings.blacklist = this._settings.blacklist;
+        else this._settings.whitelist = this._settings.whitelist;
+        this._updateQueuedWallpapers();
     }
 
     _setWallpaper() {
-        if (this._queuedWallpapers === 0) return;
+        if (this._queuedWallpapers.length === 0) return;
         const data = this._queuedWallpapers.splice(Math.floor(Math.random() * this._queuedWallpapers.length), 1)[0];
         this._visitedWallpapers.push(data.name);
         this._backgroundSettings.pictureUri = data.lightUri;
@@ -103,7 +118,13 @@ class Extension {
     }
 
     _getActiveWallpapers() {
-        return WallpaperUtility.getActiveWallpapers(WallpaperUtility.getAllWallpapers(), this._settings.order);
+        if (this._settings.useBlacklist) {
+            const wallpaperNames = this._settings.blacklist;
+            return WallpaperUtility.getAllWallpapers().filter(wallpaperData => !wallpaperNames.includes(wallpaperData.name));
+        } else {
+            const wallpaperNames = this._settings.whitelist;
+            return WallpaperUtility.getAllWallpapers().filter(wallpaperData => wallpaperNames.includes(wallpaperData.name));
+        }
     }
 
     _update() {

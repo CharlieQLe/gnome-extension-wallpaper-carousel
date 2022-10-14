@@ -4,7 +4,13 @@
         <key name="timer" type="i">
             <default>3600</default>
         </key>
-        <key name="order" type="as">
+        <key name="use-blacklist" type="b">
+            <default>false</default>
+        </key>
+        <key name="whitelist" type="as">
+            <default>[]</default>
+        </key>
+        <key name="blacklist" type="as">
             <default>[]</default>
         </key>
         <key name="directories" type="as">
