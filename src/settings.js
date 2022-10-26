@@ -51,6 +51,7 @@ var Settings = class Settings {
 }
 
 var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
+    static USE_TIMER = 'use-timer';
     static TIMER = 'timer';
     static USE_BLACKLIST = 'use-blacklist';
     static WHITELIST = 'whitelist';
@@ -64,6 +65,14 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
 
     constructor() { 
         super(WallpaperCarouselSettings.getNewSchema()); 
+    }
+
+    get useTimer() {
+        return this.getBoolean(WallpaperCarouselSettings.USE_TIMER);
+    }
+
+    onChangedUseTimer(func) {
+        this.onChanged(WallpaperCarouselSettings.USE_TIMER, func);
     }
 
     get timer() {

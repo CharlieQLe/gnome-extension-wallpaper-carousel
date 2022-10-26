@@ -44,7 +44,7 @@ var WallpaperData = class {
     }
 
     get isThemed() {
-        return this._lightUri === this.darkUri;
+        return this._lightUri !== this._darkUri;
     }
 }
 

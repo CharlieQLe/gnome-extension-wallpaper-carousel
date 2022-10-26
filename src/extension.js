@@ -66,7 +66,8 @@ class Extension {
         QuickSettingsMenu._addItems([this._toggle]);
 
         // Start the loop
-        this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
+        if (this._settings.useTimer) this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
+        this._settings.onChangedUseTimer(this._changedTimer.bind(this));
 
         // Update the wallpapers on change
         this._settings.onChangedUseBlacklist(this._updateQueuedWallpapers.bind(this));
@@ -80,8 +81,10 @@ class Extension {
     }
 
     disable() {
-        Mainloop.source_remove(this._updateLoop);
-        this._updateLoop = null;
+        if (this._updateLoop) {
+            Mainloop.source_remove(this._updateLoop);
+            this._updateLoop = null;
+        }
         this._toggle.destroy();
         this._toggle = null;
         this._queuedWallpapers = null;
@@ -96,6 +99,14 @@ class Extension {
         if (this._settings.useBlacklist) this._settings.blacklist = this._settings.blacklist;
         else this._settings.whitelist = this._settings.whitelist;
         this._updateQueuedWallpapers();
+    }
+
+    _changedTimer() {
+        if (this._updateLoop) {
+            Mainloop.source_remove(this._updateLoop);
+            this._updateLoop = null;
+        }
+        if (this._settings.useTimer) this._updateLoop = Mainloop.timeout_add_seconds(this._timeInterval, this._update.bind(this));
     }
 
     _setWallpaper() {

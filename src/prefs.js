@@ -30,6 +30,9 @@ function fillPreferencesWindow(window) {
     builder.add_from_file(`${Me.path}/ui/main.xml`);
     window.add(builder.get_object('general'));
 
+    // Handle use timer
+    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.USE_TIMER, builder.get_object(WallpaperCarouselSettings.USE_TIMER.replaceAll('-', '_')), 'active', Gio.SettingsBindFlags.DEFAULT);
+
     // Handle the timer
     wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.TIMER, builder.get_object(WallpaperCarouselSettings.TIMER.replaceAll('-', '_')), 'value', Gio.SettingsBindFlags.DEFAULT);
 
@@ -43,20 +46,16 @@ function fillPreferencesWindow(window) {
     // Get wallpapers
     const wallpapers = WallpaperUtility.getAllWallpapers();
 
-    // Get blacklist toggle
-    const useBlacklist = wallpaperCarouselSettings.useBlacklist;
-    
+    // Get whitelist or blacklist
+    let targetList = wallpaperCarouselSettings.useBlacklist ? wallpaperCarouselSettings.blacklist : wallpaperCarouselSettings.whitelist;
+
     // Build rows
     if (wallpapers.length === 0) {
         // Handle the case of no wallpapers
         wallpaperListWidget.add(new Adw.ActionRow({ title: "No wallpapers found" }));
     } else {
-        const whitelist = wallpaperCarouselSettings.whitelist;
-        const blacklist = wallpaperCarouselSettings.blacklist;
-        const targetList = useBlacklist ? blacklist : whitelist;
-
         // Handle the case of any wallpapers
-        wallpapers.forEach((wallpaperData, index) => {
+        wallpapers.forEach(wallpaperData => {
             const wallpaperRow = new Adw.ExpanderRow({
                 title: wallpaperData.name,
                 subtitle: wallpaperData.path
@@ -69,8 +68,8 @@ function fillPreferencesWindow(window) {
             });
             wallpaperToggle.connect("state-set", (_, state) => {
                 if (state) targetList.push(decodeURI(wallpaperData.name));
-                else targetList.splice(index, 1);
-                if (useBlacklist) wallpaperCarouselSettings.blacklist = targetList;
+                else targetList.splice(targetList.indexOf(wallpaperData.name), 1);
+                if (wallpaperCarouselSettings.useBlacklist) wallpaperCarouselSettings.blacklist = targetList;
                 else wallpaperCarouselSettings.whitelist = targetList;
             });
             wallpaperRow.add_action(wallpaperToggle);
@@ -95,7 +94,7 @@ function fillPreferencesWindow(window) {
 
     // Change states as needed
     wallpaperCarouselSettings.onChangedUseBlacklist(() => {
-        const targetList = wallpaperCarouselSettings.useBlacklist ? wallpaperCarouselSettings.blacklist : wallpaperCarouselSettings.whitelist;
+        targetList = wallpaperCarouselSettings.useBlacklist ? wallpaperCarouselSettings.blacklist : wallpaperCarouselSettings.whitelist;
         wallpaperToggles.forEach(data => data.toggle.state = targetList.includes(data.name))
     });
 }
