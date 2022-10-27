@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist>
     <schema id="org.gnome.shell.extensions.wallpaper-carousel" path="/org/gnome/shell/extensions/wallpaper-carousel/">
+        <key name="change-on-login" type="b">
+            <default>true</default>
+        </key>
         <key name="use-timer" type="b">
             <default>true</default>
         </key>

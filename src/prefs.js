@@ -4,7 +4,7 @@ const { Adw, Gio, GLib, Gtk, Gdk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const { WallpaperCarouselSettings } = Me.imports.settings;
+const { WallpaperCarouselSettings, BackgroundSettings } = Me.imports.settings;
 const { convertPathToURI } = Me.imports.common;
 const { WallpaperUtility } = Me.imports.wallpaperUtils;
 
@@ -26,19 +26,21 @@ function init(meta) { }
  */
 function fillPreferencesWindow(window) {
     const wallpaperCarouselSettings = new WallpaperCarouselSettings();
+    const backgroundSettings = new BackgroundSettings();
     const builder = new Gtk.Builder();
     builder.add_from_file(`${Me.path}/ui/main.xml`);
     window.add(builder.get_object('general'));
 
-    // Handle use timer
-    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.USE_TIMER, builder.get_object(WallpaperCarouselSettings.USE_TIMER.replaceAll('-', '_')), 'active', Gio.SettingsBindFlags.DEFAULT);
+    function bindWidget(key, field) {
+        wallpaperCarouselSettings.schema.bind(key, builder.get_object(key.replaceAll('-', '_')), field, Gio.SettingsBindFlags.DEFAULT);
+    }
 
-    // Handle the timer
-    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.TIMER, builder.get_object(WallpaperCarouselSettings.TIMER.replaceAll('-', '_')), 'value', Gio.SettingsBindFlags.DEFAULT);
-
-    // Handle use blacklist
-    wallpaperCarouselSettings.schema.bind(WallpaperCarouselSettings.USE_BLACKLIST, builder.get_object(WallpaperCarouselSettings.USE_BLACKLIST.replaceAll('-', '_')), 'active', Gio.SettingsBindFlags.DEFAULT);
-
+    // Handle change on login
+    bindWidget(WallpaperCarouselSettings.CHANGE_ON_LOGIN, 'active');
+    bindWidget(WallpaperCarouselSettings.USE_TIMER, 'active');
+    bindWidget(WallpaperCarouselSettings.TIMER, 'value');
+    bindWidget(WallpaperCarouselSettings.USE_BLACKLIST, 'active');
+    
     // Get the widgets
     const wallpaperListWidget = builder.get_object("wallpaper_list");
     const wallpaperToggles = [];
@@ -81,6 +83,10 @@ function fillPreferencesWindow(window) {
                 detailsRow.add_suffix(_createButton("Open Light Wallpaper", () => Gtk.show_uri(window, wallpaperData.lightUri, Gdk.CURRENT_TIME)));
                 detailsRow.add_suffix(_createButton("Open Dark Wallpaper", () => Gtk.show_uri(window, wallpaperData.darkUri, Gdk.CURRENT_TIME)));
             } else detailsRow.add_suffix(_createButton("Open Wallpaper", () => Gtk.show_uri(window, wallpaperData.lightUri, Gdk.CURRENT_TIME)));
+            detailsRow.add_suffix(_createButton("Set Wallpaper", () => {
+                backgroundSettings.pictureUri = wallpaperData.lightUri;
+                backgroundSettings.pictureUriDark = wallpaperData.darkUri;
+            }));
             wallpaperRow.add_row(detailsRow);
 
             // Add row to widget

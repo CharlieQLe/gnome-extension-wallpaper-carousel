@@ -5,6 +5,18 @@
             <object class="AdwPreferencesGroup">
                 <child>
                     <object class="AdwActionRow">
+                        <property name="title">Change on Login</property>
+                        <property name="subtitle">If enabled, change the wallpaper after logging in</property>
+                        <property name="activatable-widget">change_on_login</property>
+                        <child>
+                            <object class="GtkSwitch" id="change_on_login">
+                                <property name="valign">center</property>
+                            </object>
+                        </child>
+                    </object>
+                </child>
+                <child>
+                    <object class="AdwActionRow">
                         <property name="title">Use Timer</property>
                         <property name="subtitle">If enabled, rotate wallpapers on a timer</property>
                         <property name="activatable-widget">use_timer</property>

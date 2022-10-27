@@ -58,7 +58,7 @@ class Extension {
         this._resetWallpapers();
 
         // Initial wallpaper
-        this._setWallpaper();
+        if (this._settings.changeOnLogin) this._setWallpaper();
         
         // Quick settings
         this._toggle = new NextWallpaperToggle();

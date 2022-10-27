@@ -51,6 +51,7 @@ var Settings = class Settings {
 }
 
 var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings {
+    static CHANGE_ON_LOGIN = 'change-on-login';
     static USE_TIMER = 'use-timer';
     static TIMER = 'timer';
     static USE_BLACKLIST = 'use-blacklist';
@@ -65,6 +66,10 @@ var WallpaperCarouselSettings = class WallpaperCarouselSettings extends Settings
 
     constructor() { 
         super(WallpaperCarouselSettings.getNewSchema()); 
+    }
+
+    get changeOnLogin() {
+        return this.getBoolean(WallpaperCarouselSettings.CHANGE_ON_LOGIN);
     }
 
     get useTimer() {
